@@ -1,0 +1,29 @@
+name: Publish index from release asset
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download temp-index-upload --pattern vigno-ranch.html --dir /tmp/asset --clobber
+          ls -lh /tmp/asset/vigno-ranch.html
+          cp /tmp/asset/vigno-ranch.html index.html
+          ls -lh index.html
+      - name: Commit index.html
+        run: |
+          git config user.name "vigno-ranch"
+          git config user.email "VignoRanch@gmail.com"
+          git add index.html
+          git diff --cached --stat
+          git commit -m "Update index.html" || echo "No changes to commit"
+          git push
