@@ -1,0 +1,22 @@
+name: Deploy index
+on: workflow_dispatch
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset and replace index.html
+        run: |
+          gh release download site-update-nov12-final --pattern 'vigno-ranch.html' --dir /tmp/asset
+          cp /tmp/asset/vigno-ranch.html index.html
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit index.html
+        run: |
+          git config user.name "vigno-ranch"
+          git config user.email "VignoRanch@gmail.com"
+          git add index.html
+          git commit -m "Update site: remove sunset slide, left-align hero" || echo "no changes"
+          git push
